@@ -1,47 +1,161 @@
-
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-    <title>Example Domain</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  margin: 20px;
+}
 
-    <meta charset="utf-8" />
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style type="text/css">
-    body {
-        background-color: #f0f0f2;
-        margin: 0;
-        padding: 0;
-        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-        
-    }
-    div {
-        width: 600px;
-        margin: 5em auto;
-        padding: 2em;
-        background-color: #fdfdff;
-        border-radius: 0.5em;
-        box-shadow: 2px 3px 7px 2px rgba(0,0,0,0.02);
-    }
-    a:link, a:visited {
-        color: #38488f;
-        text-decoration: none;
-    }
-    @media (max-width: 700px) {
-        div {
-            margin: 0 auto;
-            width: auto;
-        }
-    }
-    </style>    
+.fileToLoad {
+  width: 500px;
+}
+</style>
 </head>
 
 <body>
+<h2>String Utility</h2>
 <div>
-    <h1>Example Domain</h1>
-    <p>This domain is for use in illustrative examples in documents. You may use this
-    domain in literature without prior coordination or asking for permission.</p>
-    <p><a href="https://www.iana.org/domains/example">More information...</a></p>
+  <input type="file" id="fileToLoad" class="fileToLoad" onchange="loadFile()" accept=".txt,">
+  <input type="button" value="Reload" onclick="location.reload(true)">
 </div>
+<br>
+
+<textarea id="input" rows="10" cols="100" placeholder="Choose file or copy-paste your JSON here"></textarea>
+<p>
+<input type="button" value="Convert File Name" onclick="convertFileName()">
+<input type="button" value="Sort Ascending" onclick="sortAscending()">
+<input type="button" value="Tada Nike" onclick="onTadaNike()">
+<input type="button" value="Table Format" onclick="onTableFormat()">
+<select name="numbers" id="numbers">
+  <option value="1">1</option>
+  <option value="2">2</option>
+  <option value="3">3</option>
+  <option value="4">4</option>
+  <option value="5">5</option>
+</select>
+<select name="delims" id="delims">
+  <option value="|">Pipe</option>
+  <option value=",">Comma</option>
+  <option value="&#9;&#9;">Tabs</option>
+</select>
+<input type="button" value="Psm URLs" onclick="onPsmUrls()">
+<select name="envs" id="envs">
+  <option value="pre">pre</option>
+  <option value="release">release</option>
+</select>
+<p>
+<textarea id="output" rows="10" cols="100" readonly></textarea>
+<p>
+<input type="button" value="Copy" onclick="copyToClipboard()">
+
+<script>
+function loadFile() {
+  var fileToLoad = document.getElementById("fileToLoad").files[0];
+  var fileReader = new FileReader();
+  fileReader.onload = function(fileLoadedEvent) {
+      var textFromFileLoaded = fileLoadedEvent.target.result;
+      document.getElementById("input").value = textFromFileLoaded;
+  }
+  fileReader.readAsText(fileToLoad, "UTF-8");
+}
+
+function getInput(delim) {
+  delim = delim || "\n";
+  var inputElem = document.getElementById("input");
+  return inputElem.value.split(delim);
+}
+
+function initOutput() {
+  var outputElem = document.getElementById("output");
+  outputElem.value = "";
+}
+
+function setOutput(line) {
+  var outputElem = document.getElementById("output");
+  outputElem.value += line;
+  outputElem.value += "\n";
+}
+
+function convertFileName() {
+  var lines = getInput();
+  initOutput();
+  lines.forEach(line => {
+    line = line.replace(/\s+/g, '-').toLowerCase();
+    setOutput(line);
+  });
+}
+
+function sortAscending() {
+  var lines = getInput();
+  initOutput();
+  lines.sort();
+  lines.forEach(line => {
+    setOutput(line);
+  });  
+}
+
+// function htmlEncode(s)
+// {
+//   var el = document.createElement("div");
+//   el.innerText = el.textContent = s;
+//   s = el.innerHTML;
+//   return s;
+// }
+
+function onTadaNike() {
+  onTableFormat(5, "|", "Nike");
+}
+
+function onTableFormat(colCount, delim, keyword) {
+  var numbersElem = document.getElementById("numbers");
+  var delimsElem = document.getElementById("delims");
+  colCount = colCount || numbersElem.value || 5;
+  delim = delim || delimsElem.value || "|";
+  keyword = keyword || "";
+
+  var lines = getInput();
+  initOutput();
+  var newLine = "";
+  var i = 0;
+  lines.forEach(line => {
+    i++;
+    newLine += line + delim;
+    if (i % colCount == 0) {
+      if (newLine.includes(keyword)) {
+        setOutput(newLine);
+      }
+      newLine = "";
+    }
+  });  
+}
+
+function onPsmUrls() {
+  const cdnHost = "lightning.warnermediacdn.com";
+  var envsElem = document.getElementById("envs");
+
+  var lines = getInput(" ");
+  initOutput();
+  var newLine = "";
+  var i = 0;
+  lines.forEach(line => {
+    var token = line.split(".")[0];
+    // console.log("wminst token =", token);
+    // var token = line.split("/")[1].split(".")[0];
+    var env = envsElem.value;
+    newLine = "https://" + cdnHost + "/cdp/psm/brands/" + token +"/web/" + env + "/psm.min.js";
+    if (!newLine.includes("bleacher")) {
+      setOutput(newLine);
+    }
+  });  
+}
+
+function copyToClipboard() {
+  var outputElem = document.getElementById("output");
+  outputElem.select();
+  outputElem.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(outputElem.value);  
+}
+</script>
 </body>
 </html>
